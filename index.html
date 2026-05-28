@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#0a0807" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>그린랜드2: 마이그레이션</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Oswald:wght@400;500;600;700&family=Gothic+A1:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0a0807;
+    --bg-2: #12100e;
+    --bg-3: #1a1714;
+    --ink: #e8ddc9;
+    --ink-dim: #8a7f6f;
+    --rust: #8e694b;
+    --rust-bright: #b5825a;
+    --brown-deep: #634232;
+    --steel: #687063;
+    --cream: #d8c9a8;
+    --rust-glow: rgba(142, 105, 75, 0.4);
+    --line: rgba(232, 221, 201, 0.1);
+    --display: 'Black Han Sans', sans-serif;
+    --korean: 'Gothic A1', sans-serif;
+    --mono: 'Oswald', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--korean);
+    font-weight: 400;
+    line-height: 1.7;
+    letter-spacing: -0.01em;
+    overflow-x: hidden;
+    max-width: 100vw;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Film grain */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+    opacity: 0.07;
+    pointer-events: none;
+    z-index: 200;
+    mix-blend-mode: overlay;
+  }
+
+  .wrap { max-width: 520px; margin: 0 auto; }
+
+  /* ===== 1. TITLE GRAPHIC ===== */
+  .title-hero {
+    position: relative;
+    padding: 3.5rem 1.2rem 2.5rem;
+    text-align: center;
+    background:
+      radial-gradient(ellipse at 50% 30%, rgba(142, 105, 75, 0.22), transparent 60%),
+      radial-gradient(ellipse at 50% 80%, rgba(99, 66, 50, 0.15), transparent 55%),
+      linear-gradient(180deg, #0a0807 0%, #14100c 45%, #0a0807 100%);
+    overflow: hidden;
+  }
+  .title-hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(180deg, transparent 0, transparent 3px, rgba(0,0,0,0.12) 3px, rgba(0,0,0,0.12) 4px);
+    pointer-events: none;
+    opacity: 0.5;
+  }
+
+  .title-img {
+    width: 100%;
+    max-width: 440px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+    opacity: 0;
+    animation: titleReveal 1.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s forwards;
+    filter: drop-shadow(0 8px 30px rgba(0,0,0,0.6));
+  }
+  @keyframes titleReveal {
+    from { opacity: 0; transform: scale(1.08) translateY(10px); filter: blur(8px) drop-shadow(0 8px 30px rgba(0,0,0,0.6)); }
+    to { opacity: 1; transform: scale(1) translateY(0); filter: blur(0) drop-shadow(0 8px 30px rgba(0,0,0,0.6)); }
+  }
+
+  .title-meta {
+    position: relative;
+    z-index: 2;
+    margin-top: 1.8rem;
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.32em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    opacity: 0;
+    animation: fadeUp 1.2s 1s forwards;
+  }
+  .title-meta span { color: var(--rust-bright); margin: 0 0.5rem; }
+
+  .title-tagline {
+    position: relative;
+    z-index: 2;
+    margin-top: 1.1rem;
+    font-family: var(--display);
+    font-size: 1.45rem;
+    color: var(--cream);
+    line-height: 1.35;
+    letter-spacing: 0.01em;
+    opacity: 0;
+    animation: fadeUp 1.2s 1.2s forwards;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== SECTION COMMONS ===== */
+  section { padding: 3rem 1.2rem; position: relative; }
+
+  .section-tag {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.32em;
+    color: var(--rust-bright);
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+  .section-tag::before {
+    content: '';
+    width: 22px;
+    height: 1px;
+    background: var(--rust-bright);
+  }
+
+  .section-title {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: 2.1rem;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0;
+  }
+  .section-title em { font-style: normal; color: var(--rust-bright); }
+
+  /* ===== 2. TEASER POSTER ===== */
+  .poster { background: var(--bg); border-top: 1px solid var(--line); }
+
+  .poster-frame {
+    position: relative;
+    width: 100%;
+    border: 1px solid var(--line);
+    overflow: hidden;
+    cursor: zoom-in;
+    background: #000;
+  }
+  .poster-frame img {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .poster-frame:active img { transform: scale(1.02); }
+
+  .poster-frame::after {
+    content: '↗ TAP TO ENLARGE';
+    position: absolute;
+    bottom: 0.8rem;
+    right: 0.8rem;
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    color: var(--cream);
+    background: rgba(10,8,7,0.65);
+    backdrop-filter: blur(6px);
+    padding: 0.35rem 0.6rem;
+    border: 1px solid var(--line);
+    pointer-events: none;
+  }
+
+  .poster-caption {
+    margin-top: 0.9rem;
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  /* Lightbox */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(4, 3, 2, 0.95);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s;
+  }
+  .lightbox.active { opacity: 1; pointer-events: auto; }
+  .lightbox img {
+    max-width: 100%;
+    max-height: 90vh;
+    border: 1px solid var(--line);
+    transform: scale(0.95);
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .lightbox.active img { transform: scale(1); }
+  .lightbox-close {
+    position: absolute;
+    top: calc(1rem + env(safe-area-inset-top));
+    right: 1rem;
+    width: 40px;
+    height: 40px;
+    background: rgba(10,8,7,0.6);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 1.1rem;
+    cursor: pointer;
+    z-index: 2;
+  }
+
+  /* ===== 3. TRAILER ===== */
+  .trailer { background: linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%); border-top: 1px solid var(--line); }
+
+  .video-container {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border: 1px solid var(--line);
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .video-poster {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at center, rgba(142, 105, 75, 0.3), transparent 60%),
+      linear-gradient(135deg, #14100c 0%, #2a1f16 50%, #0a0807 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.5s;
+  }
+  .video-poster::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 3px);
+  }
+  .play-btn {
+    width: 68px;
+    height: 68px;
+    border: 1px solid var(--rust-bright);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(10,8,7,0.5);
+    backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 2;
+  }
+  .play-btn::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border: 1px solid var(--rust-bright);
+    border-radius: 50%;
+    animation: ripple 2s infinite;
+  }
+  @keyframes ripple {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.4); opacity: 0; }
+  }
+  .play-btn svg { width: 22px; height: 22px; fill: var(--rust-bright); margin-left: 3px; }
+  .video-container.playing .video-poster { opacity: 0; pointer-events: none; }
+  .video-container iframe { width: 100%; height: 100%; border: none; position: absolute; inset: 0; }
+
+  .trailer-caption {
+    margin-top: 0.9rem;
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  /* ===== 3. BOOKING ===== */
+  .booking { background: var(--bg); border-top: 1px solid var(--line); }
+
+  .booking-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.6rem;
+  }
+  .booking-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.9rem 0.4rem;
+    background: var(--bg-3);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    text-decoration: none;
+    transition: all 0.3s;
+    text-align: center;
+  }
+  .booking-btn:active {
+    border-color: var(--rust-bright);
+    background: rgba(142, 105, 75, 0.1);
+  }
+  .booking-logo {
+    font-family: var(--display);
+    font-style: normal;
+    font-size: 1.5rem;
+    color: var(--rust-bright);
+    line-height: 1;
+  }
+  .booking-name {
+    font-family: var(--mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    color: var(--ink);
+    text-transform: uppercase;
+  }
+
+  /* ===== 4. SHORT-FORM ===== */
+  .shorts { background: linear-gradient(180deg, var(--bg) 0%, #060504 100%); border-top: 1px solid var(--line); }
+
+  .shorts-tabs {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 1.3rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .shorts-tab {
+    flex: 1;
+    padding: 0.8rem 0.4rem;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--ink-dim);
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+  }
+  .shorts-tab svg { width: 14px; height: 14px; fill: currentColor; }
+  .shorts-tab.active { color: var(--rust-bright); border-bottom-color: var(--rust-bright); }
+
+  .shorts-pane { display: none; }
+  .shorts-pane.active { display: block; animation: paneIn 0.4s ease; }
+  @keyframes paneIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* IG 임베드 */
+  .ig-embed-wrap {
+    background: #fff;
+    width: 100%;
+    min-height: 540px;
+    border: 1px solid var(--line);
+  }
+  .ig-embed-wrap iframe { width: 100%; min-height: 540px; border: none; display: block; }
+
+  .ig-note, .yt-note {
+    margin-top: 0.8rem;
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.05em;
+    color: var(--ink-dim);
+    line-height: 1.6;
+  }
+  .ig-note a, .yt-note a { color: var(--rust-bright); text-decoration: none; }
+
+  /* YT 숏츠 가로 스크롤 */
+  .yt-scroll {
+    display: flex;
+    gap: 0.8rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -1.2rem;
+    padding: 0 1.2rem 0.8rem;
+    scrollbar-width: none;
+  }
+  .yt-scroll::-webkit-scrollbar { display: none; }
+  .yt-short {
+    flex: 0 0 70%;
+    max-width: 260px;
+    scroll-snap-align: start;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .yt-short-video {
+    position: relative;
+    aspect-ratio: 9 / 16;
+    background: #000;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .yt-short-poster {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 50% 60%, rgba(142, 105, 75, 0.28), transparent 60%),
+      linear-gradient(160deg, #14100c 0%, #2a1f16 50%, #0a0807 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.4s;
+  }
+  .yt-short-poster::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 3px);
+  }
+  .yt-short-poster .play-btn { width: 50px; height: 50px; }
+  .yt-short-poster .play-btn svg { width: 16px; height: 16px; }
+  .yt-short-video.playing .yt-short-poster { opacity: 0; pointer-events: none; }
+  .yt-short-video iframe { width: 100%; height: 100%; border: none; position: absolute; inset: 0; }
+  .yt-badge {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    padding: 0.25rem 0.5rem;
+    background: rgba(10,8,7,0.7);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 0.5rem;
+    letter-spacing: 0.15em;
+    color: var(--rust-bright);
+    text-transform: uppercase;
+    z-index: 3;
+  }
+  .yt-short-meta { padding: 0.8rem; }
+  .yt-short-cap { font-family: var(--korean); font-size: 0.78rem; color: var(--ink); line-height: 1.5; }
+
+  .scroll-hint {
+    font-family: var(--mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.3em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    margin-top: 0.8rem;
+    text-align: center;
+  }
+
+  /* ===== 5. KINOLIGHTS DETAIL ===== */
+  .kino { background: var(--bg); border-top: 1px solid var(--line); }
+
+  .kino-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.2rem;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    text-decoration: none;
+    color: var(--ink);
+    margin-bottom: 0.8rem;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .kino-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--rust-bright);
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform 0.4s;
+  }
+  .kino-card:active { background: var(--bg-3); }
+  .kino-card:active::before { transform: scaleY(1); }
+
+  .kino-poster {
+    flex: 0 0 60px;
+    height: 84px;
+    background: linear-gradient(135deg, var(--brown-deep), #2a1f16);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--display);
+    font-style: normal;
+    font-size: 2.2rem;
+    color: var(--cream);
+    border: 1px solid var(--line);
+  }
+  .kino-info { flex: 1; min-width: 0; }
+  .kino-label {
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    letter-spacing: 0.25em;
+    color: var(--rust-bright);
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+  }
+  .kino-name {
+    font-family: var(--display);
+    font-size: 1.45rem;
+    font-weight: 400;
+    line-height: 1.15;
+    margin-bottom: 0.2rem;
+  }
+  .kino-sub { font-size: 0.72rem; color: var(--ink-dim); }
+  .kino-arrow {
+    flex: 0 0 auto;
+    font-family: var(--mono);
+    color: var(--rust-bright);
+    font-size: 1.1rem;
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: #060504;
+    padding: 2.5rem 1.2rem calc(2rem + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line);
+    text-align: center;
+  }
+  .footer-logo {
+    font-family: var(--display);
+    font-style: normal;
+    font-size: 1.6rem;
+    color: var(--ink);
+    margin-bottom: 0.5rem;
+  }
+  .footer-logo span { color: var(--rust-bright); }
+  .footer-open {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.25em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+  .footer-copy {
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    color: var(--ink-dim);
+  }
+  .footer-copy .rust { color: var(--rust-bright); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===== 1. TITLE GRAPHIC ===== -->
+  <header class="title-hero">
+    <img class="title-img" src="title.png" alt="그린랜드2: 마이그레이션" />
+    <div class="title-meta">2026.01.09 <span>·</span> 재난 액션 <span>·</span> 라이온스게이트</div>
+    <p class="title-tagline">"벙커를 떠나, 새로운 터전을 찾아서."</p>
+  </header>
+
+  <!-- ===== 2. TEASER POSTER ===== -->
+  <section class="poster" id="poster">
+    <div class="section-tag">01 / TEASER POSTER</div>
+    <h2 class="section-title">티저 <em>포스터</em></h2>
+    <div class="poster-frame" id="posterFrame">
+      <img src="teaser-poster.jpg" alt="그린랜드2: 마이그레이션 티저 포스터" />
+    </div>
+    <div class="poster-caption">
+      <span>TEASER POSTER · 05.28 공개</span>
+      <span>2026.07.01 OPEN</span>
+    </div>
+  </section>
+
+  <!-- ===== 3. TRAILER ===== -->
+  <section class="trailer" id="trailer">
+    <div class="section-tag">02 / OFFICIAL TRAILER</div>
+    <h2 class="section-title">공식 <em>예고편</em></h2>
+    <div class="video-container" id="trailerVideo">
+      <div class="video-poster">
+        <div class="play-btn">
+          <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+      </div>
+    </div>
+    <div class="trailer-caption">
+      <span>TEASER · 2026</span>
+      <span>4K · DOLBY ATMOS</span>
+    </div>
+  </section>
+
+  <!-- ===== 3. BOOKING ===== -->
+  <section class="booking" id="booking">
+    <div class="section-tag">03 / TICKET</div>
+    <h2 class="section-title">예매 <em>바로가기</em></h2>
+    <div class="booking-grid">
+      <a href="https://www.cgv.co.kr/" target="_blank" rel="noopener" class="booking-btn">
+        <span class="booking-logo">C</span>
+        <span class="booking-name">CGV</span>
+      </a>
+      <a href="https://www.megabox.co.kr/" target="_blank" rel="noopener" class="booking-btn">
+        <span class="booking-logo">M</span>
+        <span class="booking-name">메가박스</span>
+      </a>
+      <a href="https://www.lottecinema.co.kr/" target="_blank" rel="noopener" class="booking-btn">
+        <span class="booking-logo">L</span>
+        <span class="booking-name">롯데시네마</span>
+      </a>
+      <a href="https://www.sangsangmadang.com/" target="_blank" rel="noopener" class="booking-btn">
+        <span class="booking-logo">S</span>
+        <span class="booking-name">상상마당</span>
+      </a>
+      <a href="https://www.cineq.co.kr/" target="_blank" rel="noopener" class="booking-btn">
+        <span class="booking-logo">Q</span>
+        <span class="booking-name">씨네Q</span>
+      </a>
+      <a href="https://www.kobis.or.kr/" target="_blank" rel="noopener" class="booking-btn">
+        <span class="booking-logo">+</span>
+        <span class="booking-name">기타</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ===== 4. SHORT-FORM ===== -->
+  <section class="shorts" id="shorts">
+    <div class="section-tag">04 / SHORT-FORM</div>
+    <h2 class="section-title">숏폼 <em>피드</em></h2>
+
+    <div class="shorts-tabs">
+      <button class="shorts-tab active" data-tab="ig">
+        <svg viewBox="0 0 24 24"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 0 1-1.38-.9 3.7 3.7 0 0 1-.9-1.38c-.16-.42-.36-1.06-.41-2.23-.06-1.27-.07-1.65-.07-4.85s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41 1.27-.06 1.65-.07 4.85-.07M12 0C8.74 0 8.33.01 7.05.07c-1.28.06-2.15.26-2.91.55-.79.31-1.46.72-2.13 1.38A5.86 5.86 0 0 0 .62 4.13C.33 4.9.13 5.77.07 7.05.01 8.33 0 8.74 0 12s.01 3.67.07 4.95c.06 1.28.26 2.15.55 2.91.31.79.72 1.46 1.38 2.13.67.66 1.34 1.07 2.13 1.38.76.29 1.63.49 2.91.55C8.33 23.99 8.74 24 12 24s3.67-.01 4.95-.07c1.28-.06 2.15-.26 2.91-.55.79-.31 1.46-.72 2.13-1.38.66-.67 1.07-1.34 1.38-2.13.29-.76.49-1.63.55-2.91.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95c-.06-1.28-.26-2.15-.55-2.91a5.86 5.86 0 0 0-1.38-2.13A5.86 5.86 0 0 0 19.87.62C19.1.33 18.23.13 16.95.07 15.67.01 15.26 0 12 0zm0 5.84a6.16 6.16 0 1 0 0 12.32 6.16 6.16 0 0 0 0-12.32zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.4-11.85a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"/></svg>
+        인스타그램
+      </button>
+      <button class="shorts-tab" data-tab="yt">
+        <svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1c.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.6 15.6V8.4l6.2 3.6-6.2 3.6z"/></svg>
+        유튜브 숏츠
+      </button>
+    </div>
+
+    <!-- Instagram -->
+    <div class="shorts-pane active" id="pane-ig">
+      <div class="ig-embed-wrap">
+        <iframe
+          src="https://www.instagram.com/p/DYLriR5DIpM/embed/"
+          scrolling="no"
+          allowtransparency="true"
+          allow="encrypted-media"
+          loading="lazy"></iframe>
+      </div>
+      <p class="ig-note">
+        ※ 인스타 임베드는 공개 도메인(배포 후)에서만 표시됩니다.
+        <a href="https://www.instagram.com/p/DYLriR5DIpM/" target="_blank" rel="noopener">원본 게시물 →</a>
+      </p>
+    </div>
+
+    <!-- YouTube Shorts -->
+    <div class="shorts-pane" id="pane-yt">
+      <div class="yt-scroll">
+        <div class="yt-short">
+          <div class="yt-short-video" data-embed="https://www.youtube.com/embed/SHORTID1?autoplay=1">
+            <div class="yt-short-poster">
+              <span class="yt-badge">SHORTS</span>
+              <div class="play-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+            </div>
+          </div>
+          <div class="yt-short-meta">
+            <div class="yt-short-cap">티저 예고편 압축본</div>
+          </div>
+        </div>
+        <div class="yt-short">
+          <div class="yt-short-video" data-embed="https://www.youtube.com/embed/SHORTID2?autoplay=1">
+            <div class="yt-short-poster">
+              <span class="yt-badge">SHORTS</span>
+              <div class="play-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+            </div>
+          </div>
+          <div class="yt-short-meta">
+            <div class="yt-short-cap">캐릭터 인터뷰 컷</div>
+          </div>
+        </div>
+        <div class="yt-short">
+          <div class="yt-short-video" data-embed="https://www.youtube.com/embed/SHORTID3?autoplay=1">
+            <div class="yt-short-poster">
+              <span class="yt-badge">SHORTS</span>
+              <div class="play-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+            </div>
+          </div>
+          <div class="yt-short-meta">
+            <div class="yt-short-cap">VFX 메이킹 비하인드</div>
+          </div>
+        </div>
+      </div>
+      <div class="scroll-hint">← SWIPE →</div>
+      <p class="yt-note">※ SHORTID 부분을 실제 유튜브 영상 ID로 교체하세요.</p>
+    </div>
+  </section>
+
+  <!-- ===== 5. KINOLIGHTS DETAIL ===== -->
+  <section class="kino" id="kino">
+    <div class="section-tag">05 / KINOLIGHTS</div>
+    <h2 class="section-title">상세 <em>정보</em></h2>
+    <a href="https://m.kinolights.com/title/125588" target="_blank" rel="noopener" class="kino-card">
+      <div class="kino-poster">2</div>
+      <div class="kino-info">
+        <div class="kino-label">NOW · 신작</div>
+        <div class="kino-name">그린랜드2</div>
+        <div class="kino-sub">마이그레이션 · 키노라이츠 상세보기</div>
+      </div>
+      <div class="kino-arrow">→</div>
+    </a>
+    <a href="https://m.kinolights.com/title/84582" target="_blank" rel="noopener" class="kino-card">
+      <div class="kino-poster">1</div>
+      <div class="kino-info">
+        <div class="kino-label">전편</div>
+        <div class="kino-name">그린랜드</div>
+        <div class="kino-sub">1편 · 키노라이츠 상세보기</div>
+      </div>
+      <div class="kino-arrow">→</div>
+    </a>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer>
+    <div class="footer-logo">GREENLAND<span>·2</span></div>
+    <div class="footer-open">MIGRATION · IN THEATERS 2026.01.09</div>
+    <div class="footer-copy">© <span class="rust">kinolights</span></div>
+  </footer>
+
+</div>
+
+<!-- 포스터 라이트박스 -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose" aria-label="닫기">✕</button>
+  <img src="teaser-poster.jpg" alt="그린랜드2: 마이그레이션 티저 포스터 (확대)" />
+</div>
+
+<script>
+  // ===== 예고편 =====
+  // 그린랜드2: 마이그레이션 공식 예고편 (Lionsgate). 다른 예고편으로 바꾸려면 ID만 교체하세요.
+  const trailerUrl = 'https://www.youtube.com/embed/H8ieN10lX40?autoplay=1';
+  const trailerVideo = document.getElementById('trailerVideo');
+  trailerVideo.addEventListener('click', () => {
+    if (trailerVideo.classList.contains('playing')) return;
+    const iframe = document.createElement('iframe');
+    iframe.src = trailerUrl;
+    iframe.allow = 'autoplay; encrypted-media; fullscreen';
+    iframe.allowFullscreen = true;
+    trailerVideo.appendChild(iframe);
+    trailerVideo.classList.add('playing');
+  });
+
+  // ===== 숏폼 탭 전환 =====
+  document.querySelectorAll('.shorts-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.shorts-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.shorts-pane').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('pane-' + tab.dataset.tab).classList.add('active');
+    });
+  });
+
+  // ===== 유튜브 숏츠 재생 =====
+  document.querySelectorAll('.yt-short-video').forEach(video => {
+    video.addEventListener('click', () => {
+      if (video.classList.contains('playing')) return;
+      const url = video.dataset.embed;
+      if (!url || url.includes('SHORTID')) return; // placeholder는 무시
+      const iframe = document.createElement('iframe');
+      iframe.src = url;
+      iframe.allow = 'autoplay; encrypted-media; fullscreen';
+      iframe.allowFullscreen = true;
+      video.appendChild(iframe);
+      video.classList.add('playing');
+    });
+  });
+  // ===== 포스터 라이트박스 =====
+  const posterFrame = document.getElementById('posterFrame');
+  const lightbox = document.getElementById('lightbox');
+  const lightboxClose = document.getElementById('lightboxClose');
+  const openLightbox = () => {
+    lightbox.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  };
+  const closeLightbox = () => {
+    lightbox.classList.remove('active');
+    document.body.style.overflow = '';
+  };
+  posterFrame.addEventListener('click', openLightbox);
+  lightboxClose.addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) closeLightbox();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && lightbox.classList.contains('active')) closeLightbox();
+  });
+</script>
+
+</body>
+</html>
