@@ -2,6 +2,14 @@
 
 Guidance for AI assistants (and humans) working in this repository.
 
+## Communication language
+
+**Always respond in Korean (한국어) when working in this repository** — chat
+replies, explanations, and questions to the user. This project's UI copy and
+code comments are already in Korean, and the maintainer communicates in Korean.
+Keep new copy and code comments in Korean as well (see Conventions below).
+Code, identifiers, and commit messages follow their usual conventions.
+
 ## What this is
 
 A single-page, mobile-first **promotional landing page** for the film
